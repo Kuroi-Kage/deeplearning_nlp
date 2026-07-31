@@ -1,5 +1,6 @@
 import re
 
+
 try:
     import spacy
     _SPACY_AVAILABLE = True
@@ -12,6 +13,26 @@ _SPACY_MODELS = {
 }
 
 _nlp_cache = {}
+
+_INVALID_ANSWERS = {
+    "article", "résumé", "resume", "introduction", "conclusion",
+    "abstract", "chapitre", "section", "annexe", "sommaire",
+    "l'", "d'", "c'", "s'", "n'", "qu'",
+}
+
+
+def _is_valid_answer(answer: str) -> bool:
+    """Rejette les réponses trop courtes, tronquées ou trop génériques."""
+    cleaned = answer.strip()
+
+    if len(cleaned) < 3:
+        return False
+    if cleaned.endswith(("'", "-", "’")):
+        return False
+    if cleaned.lower() in _INVALID_ANSWERS:
+        return False
+
+    return True
 
 
 def _load_spacy_model(lang: str):
@@ -67,7 +88,7 @@ def _generate_spacy(passage: str, lang: str, max_questions: int) -> list[dict]:
             if ent.label_ not in _SPACY_TEMPLATES.get(lang, {}):
                 continue
             question = _build_question_spacy(sent.text, ent.text, ent.label_, lang)
-            if question:
+            if question and _is_valid_answer(ent.text):
                 results.append({
                     "question": question,
                     "answer": ent.text,
@@ -124,7 +145,7 @@ def _generate_lite(passage: str, lang: str, max_questions: int) -> list[dict]:
             answer = year_match.group(0)
             is_first = sentence.strip().startswith(answer)
             q = _build_question_lite(sentence, answer, "DATE", lang, is_first)
-            if q:
+            if q and _is_valid_answer(answer):
                 results.append({
                     "question": q, "answer": answer, "answer_type": "DATE",
                     "source_sentence": sentence, "method": "lite",
@@ -137,7 +158,7 @@ def _generate_lite(passage: str, lang: str, max_questions: int) -> list[dict]:
             if is_first:
                 continue
             q = _build_question_lite(sentence, answer, "PROPN", lang, is_first)
-            if q:
+            if q and _is_valid_answer(answer):
                 results.append({
                     "question": q, "answer": answer, "answer_type": "PROPN",
                     "source_sentence": sentence, "method": "lite",
@@ -167,11 +188,3 @@ def generate_questions_rule_based(passage: str, lang: str, max_questions: int = 
 
 
 if __name__ == "__main__":
-    """
-    exemple_fr = (
-        "Marie Curie a reçu le prix Nobel de physique en 1903. "
-        "Elle est née à Varsovie et a travaillé toute sa vie en France."
-    )
-    for q in generate_questions_rule_based(exemple_fr, "fr"):
-        print(q)
-    """
