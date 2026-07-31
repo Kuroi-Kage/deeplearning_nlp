@@ -1,10 +1,10 @@
 import argparse
 import json
 
-from pdf_extractor import extract_text_from_pdf, clean_text, split_into_passages
-from lang_utils import detect_language
-from rules import generate_questions_rule_based
-from distractor import build_mcq
+from src.extraction.pdf_extractor import extract_text_from_pdf, clean_text, split_into_passages
+from src.language.lang_utils import detect_language
+from src.question_generation.rule_based_qg import generate_questions_rule_based
+from src.question_generation.distractors import build_mcq
 
 
 def build_quiz(pdf_path: str, n_questions: int = 8, use_transformer_fallback: bool = True) -> dict:

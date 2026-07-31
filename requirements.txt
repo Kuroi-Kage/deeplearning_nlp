@@ -5,6 +5,3 @@ transformers==4.44.0
 torch==2.4.0+cpu
 streamlit==1.37.1
 
-# Modèles spaCy à installer séparément après pip install -r requirements.txt :
-#   python -m spacy download fr_core_news_sm
-#   python -m spacy download en_core_web_sm
