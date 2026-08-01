@@ -186,5 +186,3 @@ def generate_questions_rule_based(passage: str, lang: str, max_questions: int = 
 
     return _generate_lite(passage, lang, max_questions)
 
-
-if __name__ == "__main__":
